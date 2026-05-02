@@ -2,6 +2,7 @@ package dev.mikablondo.loom_spring_playground.controller;
 
 import dev.mikablondo.loom_spring_playground.service.LoomService;
 import dev.mikablondo.loom_spring_playground.service.ThreadMetricsService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -34,6 +35,7 @@ public class LoomController {
      * @return le message du thread
      * @throws InterruptedException en cas d'erreur
      */
+    @Operation(summary = "Runs a single virtual thread task")
     @GetMapping("/hello")
     public String hello() throws InterruptedException {
         return loomService.slowTask(1);
@@ -46,6 +48,7 @@ public class LoomController {
      * @return les messages des threads
      * @throws Exception en cas d'erreur
      */
+    @Operation(summary = "Runs 10 virtual thread tasks in parallel")
     @GetMapping("/parallel")
     public List<String> parallel() throws Exception {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -64,6 +67,7 @@ public class LoomController {
      *
      * @return un SseEmitter (voir https://html.spec.whatwg.org/multipage/server-sent-events.html)
      */
+    @Operation(summary = "Pushes thread metrics every second via SSE")
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream() {
         SseEmitter emitter = new SseEmitter(60_000L);
@@ -90,6 +94,7 @@ public class LoomController {
      * @return message de fin
      * @throws InterruptedException en cas d'erreur
      */
+    @Operation(summary = "Spawns N virtual threads to stress the JVM")
     @GetMapping("/stress")
     public String stress(@RequestParam(defaultValue = "100") int count) throws InterruptedException {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
