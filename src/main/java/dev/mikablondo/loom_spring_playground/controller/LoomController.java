@@ -1,10 +1,16 @@
 package dev.mikablondo.loom_spring_playground.controller;
 
 import dev.mikablondo.loom_spring_playground.service.LoomService;
+import dev.mikablondo.loom_spring_playground.service.ThreadMetricsService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -12,13 +18,11 @@ import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/loom")
+@RequiredArgsConstructor
 public class LoomController {
 
     private final LoomService loomService;
-
-    public LoomController(LoomService loomService) {
-        this.loomService = loomService;
-    }
+    private final ThreadMetricsService metricsService;
 
     /**
      * Endpoint simple
@@ -49,5 +53,47 @@ public class LoomController {
             for (var f : futures) results.add(f.get());
             return results;
         }
+    }
+
+    /**
+     * Endpoint permettant de pousser les métriques toutes les secondes via SSE
+     *
+     * @return un SseEmitter (voir https://html.spec.whatwg.org/multipage/server-sent-events.html)
+     */
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream() {
+        SseEmitter emitter = new SseEmitter(60_000L);
+
+        Thread.ofVirtual().start(() -> {
+            try {
+                for (int i = 0; i < 60; i++) {
+                    emitter.send(metricsService.getMetrics());
+                    Thread.sleep(1000);
+                }
+                emitter.complete();
+            } catch (IOException | InterruptedException e) {
+                emitter.completeWithError(e);
+            }
+        });
+
+        return emitter;
+    }
+
+    /**
+     * Endpoint permettant de lancer N virtual threads
+     *
+     * @param count nombre de threads à exécuter
+     * @return message de fin
+     * @throws InterruptedException en cas d'erreur
+     */
+    @GetMapping("/stress")
+    public String stress(@RequestParam(defaultValue = "100") int count) throws InterruptedException {
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (int i = 0; i < count; i++) {
+                int id = i;
+                executor.submit(() -> loomService.slowTask(id));
+            }
+        }
+        return "Stress test terminé : %d virtual threads lancés !".formatted(count);
     }
 }
