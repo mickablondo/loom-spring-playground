@@ -6,6 +6,16 @@ Exploring Java virtual threads with Spring Boot and Project Loom.
 
 ## Metrics
 
+Create a dashboard.html file in src/main/resources/static/, or use the one already provided in the repository.  
+Run the Spring Boot application.  
+Then open http://localhost:8080/dashboard.html in your browser.  
+
+The dashboard displays the following metrics in real time :
+- Virtual Threads : Lightweight threads managed by the JVM, the core of Project Loom ;
+- Platform Threads : Traditional OS-level threads, heavy and limited in number ;
+- Total Threads : Sum of virtual and platform threads currently running ;
+- Peak Threads : Maximum number of threads reached since the application started.
+
 ### Dashboard example without stress
 ![img.png](docs/images/dashboard.png)
 
