@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Loom Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 2rem;
+        }
+        h1 { text-align: center; margin-bottom: 0.5rem; color: #7dd3fc; font-size: 1.8rem; }
+        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem; }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        .card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #7dd3fc;
+        }
+        .card.green .value { color: #86efac; }
+        .card.orange .value { color: #fdba74; }
+        .card.red .value { color: #fca5a5; }
+        .card .label { font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem; }
+        .chart-box {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #334155;
+            margin-bottom: 2rem;
+        }
+        .chart-box h2 { color: #7dd3fc; margin-bottom: 1rem; font-size: 1rem; }
+        .actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.85; }
+        .btn-stress { background: #7dd3fc; color: #0f172a; }
+        .btn-stress-big { background: #86efac; color: #0f172a; }
+        .status {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        .dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #86efac;
+            margin-right: 6px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>🧵 Loom Dashboard</h1>
+<p class="subtitle">Virtual Threads en temps réel — Spring Boot 4 + Java 21</p>
+
+<div class="cards">
+    <div class="card green">
+        <div class="value" id="virtualCount">0</div>
+        <div class="label">Virtual Threads</div>
+    </div>
+    <div class="card orange">
+        <div class="value" id="platformCount">0</div>
+        <div class="label">Platform Threads</div>
+    </div>
+    <div class="card">
+        <div class="value" id="totalCount">0</div>
+        <div class="label">Total Threads</div>
+    </div>
+    <div class="card red">
+        <div class="value" id="peakCount">0</div>
+        <div class="label">Peak Threads</div>
+    </div>
+</div>
+
+<div class="chart-box">
+    <h2>📈 Évolution des threads (60 dernières secondes)</h2>
+    <canvas id="threadChart" height="100"></canvas>
+</div>
+
+<div class="actions">
+    <button class="btn-stress" onclick="stress(100)">⚡ Stress 100 threads</button>
+    <button class="btn-stress-big" onclick="stress(500)">🚀 Stress 500 threads</button>
+</div>
+
+<div class="status">
+    <span class="dot"></span> Connecté au flux SSE · mise à jour toutes les secondes
+</div>
+
+<script>
+    const ctx = document.getElementById('threadChart').getContext('2d');
+    const maxPoints = 60;
+    const labels = [];
+    const virtualData = [];
+    const platformData = [];
+
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Virtual Threads',
+                    data: virtualData,
+                    borderColor: '#7dd3fc',
+                    backgroundColor: 'rgba(125,211,252,0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 2,
+                },
+                {
+                    label: 'Platform Threads',
+                    data: platformData,
+                    borderColor: '#fdba74',
+                    backgroundColor: 'rgba(253,186,116,0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 2,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            animation: false,
+            scales: {
+                x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: true }
+            },
+            plugins: {
+                legend: { labels: { color: '#e2e8f0' } }
+            }
+        }
+    });
+
+    function updateChart(data) {
+        const time = new Date(data.timestamp).toLocaleTimeString();
+        labels.push(time);
+        virtualData.push(data.virtualThreads);
+        platformData.push(data.platformThreads);
+        if (labels.length > maxPoints) {
+            labels.shift(); virtualData.shift(); platformData.shift();
+        }
+        chart.update();
+
+        document.getElementById('virtualCount').textContent = data.virtualThreads;
+        document.getElementById('platformCount').textContent = data.platformThreads;
+        document.getElementById('totalCount').textContent = data.totalThreads;
+        document.getElementById('peakCount').textContent = data.peakThreads;
+    }
+
+    // Connexion SSE
+    const evtSource = new EventSource('http://localhost:8080/loom/stream');
+    evtSource.onmessage = (e) => updateChart(JSON.parse(e.data));
+    evtSource.onerror = () => console.error('SSE déconnecté');
+
+    // Stress test
+    function stress(count) {
+        fetch(`http://localhost:8080/loom/stress?count=${count}`)
+            .then(r => r.text())
+            .then(msg => console.log(msg));
+    }
+</script>
+
+</body>
+</html>
