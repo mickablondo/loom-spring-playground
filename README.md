@@ -21,3 +21,11 @@ The dashboard displays the following metrics in real time :
 
 ### Dashboard example with stress
 ![img.png](docs/images/dashboard_stress.png)
+
+### Optional
+
+You can tweak the following values in application.properties:
+- **loom.thread.create.tempo**: delay (in ms) between each thread creation ;
+- **loom.thread.life.tempo**: delay (in ms) for how long each thread stays alive ;
+
+![img.png](docs/images/dashboard_tempo.png)

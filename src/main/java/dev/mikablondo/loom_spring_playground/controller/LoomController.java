@@ -3,6 +3,7 @@ package dev.mikablondo.loom_spring_playground.controller;
 import dev.mikablondo.loom_spring_playground.service.LoomService;
 import dev.mikablondo.loom_spring_playground.service.ThreadMetricsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,9 @@ import java.util.stream.IntStream;
 @RequestMapping("/loom")
 @RequiredArgsConstructor
 public class LoomController {
+
+    @Value("${loom.thread.create.tempo}")
+    private long tempo;
 
     private final LoomService loomService;
     private final ThreadMetricsService metricsService;
@@ -91,6 +95,7 @@ public class LoomController {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             for (int i = 0; i < count; i++) {
                 int id = i;
+                Thread.sleep(tempo);
                 executor.submit(() -> loomService.slowTask(id));
             }
         }
