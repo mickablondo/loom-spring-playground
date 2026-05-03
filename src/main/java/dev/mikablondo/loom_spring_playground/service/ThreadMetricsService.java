@@ -17,6 +17,7 @@ public class ThreadMetricsService {
 
     private final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
+    // utilisation d'un AotmicLong pour garantir la thread-safety des opérations d'incrémentation et de décrémentation
     private final AtomicLong activeVirtualThreads = new AtomicLong(0);
 
     public void incrementVirtual() { activeVirtualThreads.incrementAndGet(); }
