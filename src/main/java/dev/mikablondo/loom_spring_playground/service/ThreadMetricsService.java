@@ -36,7 +36,7 @@ public class ThreadMetricsService {
                 "virtualThreads", virtualCount,
                 "platformThreads", platformCount,
                 "totalThreads", virtualCount + platformCount,
-                "peakThreads", threadMXBean.getPeakThreadCount(),
+                "peakThreads", threadMXBean.getPeakThreadCount(), // Returns the peak live platform thread count since the Java virtual machine started or peak was reset. The count does not include virtual threads.
                 "timestamp", System.currentTimeMillis()
         );
     }
