@@ -9,6 +9,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Classe permettant de gérer les différentes métriques des threads JVM
+ * - Virtual threads
+ * - Platform threads
+ * - Total des threads
+ * - Peak threads
  *
  * @author mika_blondo
  */
