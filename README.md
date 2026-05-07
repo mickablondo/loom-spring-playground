@@ -38,16 +38,24 @@ You can tweak the following values in application.properties:
 
 ![img.png](docs/images/dashboard_tempo.png)
 
+## Benchmark
+
+You can run a benchmark comparing virtual threads against platform threads.  
+Here with 1000 parallel tasks for each type.
+
+![Benchmark results](docs/images/benchmark.png)
+
 ## Endpoints
 
 ### Definition
 
-| Method | Endpoint                 | Description                                |
-|--------|--------------------------|--------------------------------------------|
-| GET    | `/loom/hello`            | Runs a single virtual thread task          |
-| GET    | `/loom/parallel`         | Runs 10 virtual thread tasks in parallel   |
-| GET    | `/loom/stream`           | Pushes thread metrics every second via SSE |
-| GET    | `/loom/stress?count=100` | Spawns N virtual threads to stress the JVM |
+| Method | Endpoint                 | Description                                           |
+|--------|--------------------------|-------------------------------------------------------|
+| GET    | `/loom/hello`            | Runs a single virtual thread task                     |
+| GET    | `/loom/parallel`         | Runs 10 virtual thread tasks in parallel              |
+| GET    | `/loom/stream`           | Pushes thread metrics every second via SSE            |
+| GET    | `/loom/stress?count=100` | Spawns N virtual threads to stress the JVM            |
+| GET    | `/loom/benchmark`        | Runs a benchmark: virtual threads vs platform threads |
 
 ### Swagger
 

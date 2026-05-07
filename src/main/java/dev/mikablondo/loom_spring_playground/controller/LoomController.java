@@ -1,5 +1,6 @@
 package dev.mikablondo.loom_spring_playground.controller;
 
+import dev.mikablondo.loom_spring_playground.service.BenchmarkService;
 import dev.mikablondo.loom_spring_playground.service.LoomService;
 import dev.mikablondo.loom_spring_playground.service.ThreadMetricsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
@@ -28,6 +30,7 @@ public class LoomController {
 
     private final LoomService loomService;
     private final ThreadMetricsService metricsService;
+    private final BenchmarkService benchmarkService;
 
     /**
      * Endpoint simple
@@ -105,5 +108,10 @@ public class LoomController {
             }
         }
         return "Stress test terminé : %d virtual threads lancés !".formatted(count);
+    }
+
+    @GetMapping("/benchmark")
+    public Map<String, Object> benchmark() throws InterruptedException {
+        return benchmarkService.run();
     }
 }
