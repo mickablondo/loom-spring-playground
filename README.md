@@ -45,17 +45,34 @@ Here with 1000 parallel tasks for each type.
 
 ![Benchmark results](docs/images/benchmark.png)
 
+## Pinning
+
+With `synchronized` carrier thread is pinned, virtual threads queue up:
+```json
+{"strategy":"synchronized","taskCount":100,"timeMs":10898}
+```
+
+With `ReentrantLock` carrier thread is free, virtual threads run in parallel: 
+```json
+{"strategy":"ReentrantLock","taskCount":100,"timeMs":120}
+```
+
+> 💡 `synchronized` pins the carrier thread during I/O, blocking all other virtual threads.  
+> Use `ReentrantLock` instead to let the JVM freely schedule virtual threads.
+
 ## Endpoints
 
 ### Definition
 
-| Method | Endpoint                 | Description                                           |
-|--------|--------------------------|-------------------------------------------------------|
-| GET    | `/loom/hello`            | Runs a single virtual thread task                     |
-| GET    | `/loom/parallel`         | Runs 10 virtual thread tasks in parallel              |
-| GET    | `/loom/stream`           | Pushes thread metrics every second via SSE            |
-| GET    | `/loom/stress?count=100` | Spawns N virtual threads to stress the JVM            |
-| GET    | `/loom/benchmark`        | Runs a benchmark: virtual threads vs platform threads |
+| Method | Endpoint                 | Description                                                |
+|--------|--------------------------|------------------------------------------------------------|
+| GET    | `/loom/hello`            | Runs a single virtual thread task                          |
+| GET    | `/loom/parallel`         | Runs 10 virtual thread tasks in parallel                   |
+| GET    | `/loom/stream`           | Pushes thread metrics every second via SSE                 |
+| GET    | `/loom/stress?count=100` | Spawns N virtual threads to stress the JVM                 |
+| GET    | `/loom/benchmark`        | Runs a benchmark: virtual threads vs platform threads      |
+| GET    | `/loom/pinning/good`     | Demonstrates pinning avoidance using ReentrantLock         |
+| GET    | `/loom/pinning/bad`      | Demonstrates carrier thread pinning caused by synchronized |
 
 ### Swagger
 

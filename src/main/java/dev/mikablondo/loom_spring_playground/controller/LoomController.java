@@ -2,6 +2,7 @@ package dev.mikablondo.loom_spring_playground.controller;
 
 import dev.mikablondo.loom_spring_playground.service.BenchmarkService;
 import dev.mikablondo.loom_spring_playground.service.LoomService;
+import dev.mikablondo.loom_spring_playground.service.PinningService;
 import dev.mikablondo.loom_spring_playground.service.ThreadMetricsService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class LoomController {
     private final LoomService loomService;
     private final ThreadMetricsService metricsService;
     private final BenchmarkService benchmarkService;
+    private final PinningService pinningService;
 
     /**
      * Endpoint simple
@@ -114,4 +116,43 @@ public class LoomController {
     public Map<String, Object> benchmark() throws InterruptedException {
         return benchmarkService.run();
     }
+
+    //region PINNING
+    // pinning : quand le virtual thread reste collé au carrier thread
+    // carrier thread : le platform thread qui porte le virtual thread le temps qu'il s'exécute
+
+    /**
+     * Endpoint pour tester l'effet pinning avec du synchronized.
+     * Le carrier thread est bloqué pendant le sleep, les virtual threads se mettent en file d'attente.
+     *
+     * @return les résultats du test de pinning avec synchronized
+     * @throws InterruptedException en cas d'interruption du thread
+     */
+    @GetMapping("/pinning/bad")
+    public Map<String, Object> pinningBad() throws InterruptedException {
+        long time = pinningService.runWithSynchronized();
+        return Map.of(
+                "strategy", "synchronized",
+                "taskCount", 100,
+                "timeMs", time
+        );
+    }
+
+    /**
+     * Endpoint pour tester le ReentrantLock : bonne pratique pour éviter le pinning
+     * Le carrier thread est libéré pendant le sleep, les virtual threads s'exécutent en parallèle.
+     *
+     * @return les résultats du test de pinning avec ReentrantLock
+     * @throws InterruptedException en cas d'interruption du thread
+     */
+    @GetMapping("/pinning/good")
+    public Map<String, Object> pinningGood() throws InterruptedException {
+        long time = pinningService.runWithReentrantLock();
+        return Map.of(
+                "strategy", "ReentrantLock",
+                "taskCount", 100,
+                "timeMs", time
+        );
+    }
+    //endregion
 }
