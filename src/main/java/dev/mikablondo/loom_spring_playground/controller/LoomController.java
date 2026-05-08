@@ -70,7 +70,7 @@ public class LoomController {
     /**
      * Endpoint permettant de pousser les métriques toutes les secondes via SSE
      *
-     * @return un SseEmitter (voir https://html.spec.whatwg.org/multipage/server-sent-events.html)
+     * @return un SseEmitter (voir <a href="https://html.spec.whatwg.org/multipage/server-sent-events.html">...</a>)
      */
     @Operation(summary = "Pushes thread metrics every second via SSE")
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -113,7 +113,7 @@ public class LoomController {
     }
 
     @GetMapping("/benchmark")
-    public Map<String, Object> benchmark() throws InterruptedException {
+    public Map<String, Object> benchmark() {
         return benchmarkService.run();
     }
 
@@ -126,10 +126,9 @@ public class LoomController {
      * Le carrier thread est bloqué pendant le sleep, les virtual threads se mettent en file d'attente.
      *
      * @return les résultats du test de pinning avec synchronized
-     * @throws InterruptedException en cas d'interruption du thread
      */
     @GetMapping("/pinning/bad")
-    public Map<String, Object> pinningBad() throws InterruptedException {
+    public Map<String, Object> pinningBad() {
         long time = pinningService.runWithSynchronized();
         return Map.of(
                 "strategy", "synchronized",
@@ -143,10 +142,9 @@ public class LoomController {
      * Le carrier thread est libéré pendant le sleep, les virtual threads s'exécutent en parallèle.
      *
      * @return les résultats du test de pinning avec ReentrantLock
-     * @throws InterruptedException en cas d'interruption du thread
      */
     @GetMapping("/pinning/good")
-    public Map<String, Object> pinningGood() throws InterruptedException {
+    public Map<String, Object> pinningGood() {
         long time = pinningService.runWithReentrantLock();
         return Map.of(
                 "strategy", "ReentrantLock",
