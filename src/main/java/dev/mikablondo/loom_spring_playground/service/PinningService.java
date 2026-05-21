@@ -6,6 +6,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 
+/**
+ * Service permettant de démontrer la gestion du pinning
+ * Pinning : quand un virtual thread reste bloqué sur un vrai thread système et empêche Loom de le réutiliser efficacement
+ *
+ * @author mikablondo
+ */
 @Service
 public class PinningService {
 
