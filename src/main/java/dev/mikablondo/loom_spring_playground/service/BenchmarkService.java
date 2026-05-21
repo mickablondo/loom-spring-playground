@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 /**
- *
+ * Service permettant l'exécution du benchmark sur les deux types de threads
  *
  * @author mikablondo
  */
