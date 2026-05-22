@@ -5,9 +5,12 @@ import dev.mikablondo.loom_spring_playground.service.LoomService;
 import dev.mikablondo.loom_spring_playground.service.PinningService;
 import dev.mikablondo.loom_spring_playground.service.ThreadMetricsService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +32,7 @@ import java.util.stream.IntStream;
 @RestController
 @RequestMapping("/loom")
 @RequiredArgsConstructor
+@Validated
 public class LoomController {
 
     @Value("${loom.thread.create.tempo}")
@@ -106,7 +110,7 @@ public class LoomController {
      */
     @Operation(summary = "Spawns N virtual threads to stress the JVM")
     @GetMapping("/stress")
-    public String stress(@RequestParam(defaultValue = "100") int count) throws InterruptedException {
+    public String stress(@RequestParam(defaultValue = "100") @Min(1) @Max(100_000) int count) throws InterruptedException {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             for (int i = 0; i < count; i++) {
                 int id = i;
