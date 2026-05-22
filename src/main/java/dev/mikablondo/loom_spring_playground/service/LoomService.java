@@ -27,7 +27,7 @@ public class LoomService {
      * @throws InterruptedException en cas d'erreur
      */
     public String slowTask(int id) throws InterruptedException {
-        metricsService.incrementVirtual();
+        metricsService.incrementVirtualTask();
         try {
             if(log.isDebugEnabled()) {
                 log.debug("Thread {} isVirtual: {}", id, Thread.currentThread().isVirtual());
@@ -35,7 +35,7 @@ public class LoomService {
             Thread.sleep(tempo);
             return "Tâche %d réalisée par %s".formatted(id, Thread.currentThread());
         } finally {
-            metricsService.decrementVirtual();
+            metricsService.decrementVirtualTask();
         }
     }
 }

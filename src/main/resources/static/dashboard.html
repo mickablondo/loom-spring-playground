@@ -85,19 +85,19 @@
 <div class="cards">
     <div class="card green">
         <div class="value" id="virtualCount">0</div>
-        <div class="label">Virtual Threads</div>
+        <div class="label">Active Virtual Tasks</div>
     </div>
     <div class="card orange">
         <div class="value" id="platformCount">0</div>
-        <div class="label">Platform Threads</div>
+        <div class="label">Active Platform Tasks</div>
     </div>
     <div class="card">
         <div class="value" id="totalCount">0</div>
-        <div class="label">Total Threads</div>
+        <div class="label">JVM Platform Threads</div>
     </div>
     <div class="card red">
         <div class="value" id="peakCount">0</div>
-        <div class="label">Peak Threads</div>
+        <div class="label">Peak JVM Platform Threads</div>
     </div>
 </div>
 
@@ -163,17 +163,17 @@
     function updateChart(data) {
         const time = new Date(data.timestamp).toLocaleTimeString();
         labels.push(time);
-        virtualData.push(data.virtualThreads);
-        platformData.push(data.platformThreads);
+        virtualData.push(data.activeVirtualTasks);
+        platformData.push(data.activePlatformTasks);
         if (labels.length > maxPoints) {
             labels.shift(); virtualData.shift(); platformData.shift();
         }
         chart.update();
 
-        document.getElementById('virtualCount').textContent = data.virtualThreads;
-        document.getElementById('platformCount').textContent = data.platformThreads;
-        document.getElementById('totalCount').textContent = data.totalThreads;
-        document.getElementById('peakCount').textContent = data.peakThreads;
+        document.getElementById('virtualCount').textContent = data.activeVirtualTasks;
+        document.getElementById('platformCount').textContent = data.activePlatformTasks;
+        document.getElementById('totalCount').textContent = data.jvmPlatformThreads;
+        document.getElementById('peakCount').textContent = data.peakJvmPlatformThreads;
     }
 
     // Connexion SSE

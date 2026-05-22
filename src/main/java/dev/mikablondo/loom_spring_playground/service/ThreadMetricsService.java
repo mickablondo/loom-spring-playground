@@ -21,11 +21,15 @@ public class ThreadMetricsService {
 
     private final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
-    // utilisation d'un AotmicLong pour garantir la thread-safety des opérations d'incrémentation et de décrémentation
-    private final AtomicLong activeVirtualThreads = new AtomicLong(0);
+    // utilisation d'un AtomicLong pour garantir la thread-safety des opérations d'incrémentation et de décrémentation
+    private final AtomicLong activeVirtualTasks = new AtomicLong(0);
+    private final AtomicLong activePlatformTasks = new AtomicLong(0);
 
-    public void incrementVirtual() { activeVirtualThreads.incrementAndGet(); }
-    public void decrementVirtual() { activeVirtualThreads.decrementAndGet(); }
+    public void incrementVirtualTask() { activeVirtualTasks.incrementAndGet(); }
+    public void decrementVirtualTask() { activeVirtualTasks.decrementAndGet(); }
+
+    public void incrementPlatformTask() { activePlatformTasks.incrementAndGet(); }
+    public void decrementPlatformTask() { activePlatformTasks.decrementAndGet(); }
 
     /**
      * Récupère les infos des différents threads en cours d'exécution
@@ -33,14 +37,15 @@ public class ThreadMetricsService {
      * @return une Map des différentes métriques avec leur valeur
      */
     public Map<String, Object> getMetrics() {
-        long virtualCount = activeVirtualThreads.get();
-        long platformCount = threadMXBean.getThreadCount();
+        long virtualTasks = activeVirtualTasks.get();
+        long platformTasks = activePlatformTasks.get();
+        long jvmPlatformThreads = threadMXBean.getThreadCount();
 
         return Map.of(
-                "virtualThreads", virtualCount,
-                "platformThreads", platformCount,
-                "totalThreads", virtualCount + platformCount,
-                "peakThreads", threadMXBean.getPeakThreadCount(), // Returns the peak live platform thread count since the Java virtual machine started or peak was reset. The count does not include virtual threads.
+                "activeVirtualTasks", virtualTasks,
+                "activePlatformTasks", platformTasks,
+                "jvmPlatformThreads", jvmPlatformThreads,
+                "peakJvmPlatformThreads", threadMXBean.getPeakThreadCount(), // Returns the peak live platform thread count since the Java virtual machine started or peak was reset. The count does not include virtual threads.
                 "timestamp", System.currentTimeMillis()
         );
     }

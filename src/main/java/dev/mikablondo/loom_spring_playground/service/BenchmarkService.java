@@ -19,7 +19,7 @@ public class BenchmarkService {
     private final ThreadMetricsService threadMetricsService;
 
     private static final int TASK_COUNT = 10000;
-    private static final int SLEEP_MS = 100;
+    private static final int SLEEP_MS = 1000;
 
     /**
      * Exécute le benchmark : Virtual Threads vs Platform Threads
@@ -27,8 +27,13 @@ public class BenchmarkService {
      * @return toutes les données permettant de justifier qui a gagné !
      */
     public Map<String, Object> run() {
+        System.out.println("START virtual");
         long virtualTime = calculVirtualThreadTime();
+        System.out.println("END virtual");
+
+        System.out.println("START platform");
         long platformTime = calculPlatformThreadTime();
+        System.out.println("END platform");
 
         return Map.of(
                 "Nombre de tâches en parallèle", TASK_COUNT,
@@ -46,14 +51,29 @@ public class BenchmarkService {
      * 2. réalise un "gros" calcul
      */
     private void simulateAction() {
-        threadMetricsService.incrementVirtual();
         try {
             Thread.sleep(SLEEP_MS);
-            long result = IntStream.range(0, 1000).asLongStream().sum();
+            IntStream.range(0, 1000).asLongStream().sum();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private void simulateVirtualAction() {
+        threadMetricsService.incrementVirtualTask();
+        try {
+            simulateAction();
         } finally {
-            threadMetricsService.decrementVirtual();
+            threadMetricsService.decrementVirtualTask();
+        }
+    }
+
+    private void simulatePlatformAction() {
+        threadMetricsService.incrementPlatformTask();
+        try {
+            simulateAction();
+        } finally {
+            threadMetricsService.decrementPlatformTask();
         }
     }
 
@@ -66,7 +86,7 @@ public class BenchmarkService {
         long startVirtual = System.currentTimeMillis();
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var futures = IntStream.range(0, TASK_COUNT)
-                    .mapToObj(i -> executor.submit(this::simulateAction))
+                    .mapToObj(i -> executor.submit(this::simulateVirtualAction))
                     .toList();
             for (var f : futures) {
                 try { f.get(); } catch (Exception e) { Thread.currentThread().interrupt(); }
@@ -84,7 +104,7 @@ public class BenchmarkService {
         long startPlatform = System.currentTimeMillis();
         try (var executor = Executors.newFixedThreadPool(200)) {
             var futures = IntStream.range(0, TASK_COUNT)
-                    .mapToObj(i -> executor.submit(this::simulateAction))
+                    .mapToObj(i -> executor.submit(this::simulatePlatformAction))
                     .toList();
             for (var f : futures) {
                 try { f.get(); } catch (Exception e) { Thread.currentThread().interrupt(); }
