@@ -21,6 +21,11 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
+/**
+ * Contrôleur Loom !
+ *
+ * @author mikablondo
+ */
 @RestController
 @RequestMapping("/loom")
 @RequiredArgsConstructor
