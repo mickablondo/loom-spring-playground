@@ -41,9 +41,29 @@ You can tweak the following values in application.properties:
 ## Benchmark
 
 You can run a benchmark comparing virtual threads against platform threads.  
-Here with 1000 parallel tasks for each type.
+Here with 10,000 blocking tasks for each type.
 
-![Benchmark results](docs/images/benchmark.png)
+With virtual threads, almost all tasks can be started at once. In the dashboard,
+`activeVirtualTasks` can briefly peak near 10,000, then quickly drop when the
+simulated blocking work finishes.
+
+With platform threads, the benchmark uses a fixed thread pool of 200 threads.
+Only 200 tasks can run at the same time, while the remaining tasks wait in the
+executor queue. The workload therefore lasts longer and `activePlatformTasks`
+stays around 200 until all queued tasks are processed.
+To match the same level of concurrency with platform threads, the JVM would need
+to create thousands of native OS threads, which is much more expensive and may
+hit system limits.
+On a typical modern developer machine with 16-32 GB of RAM and 8-24 logical
+processors, creating more than a few hundred platform threads in parallel is
+usually not recommended for regular application workloads.
+
+This benchmark shows that virtual threads are especially useful for highly
+concurrent blocking workloads, such as database calls, HTTP calls, file I/O, or
+any operation where threads spend most of their time waiting. It does not mean
+that virtual threads make CPU-bound work faster.
+
+![img.png](docs/images/benchmark.png)
 
 ## Pinning
 
