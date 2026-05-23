@@ -84,15 +84,22 @@ With `ReentrantLock` carrier thread is free, virtual threads run in parallel:
 
 ### Definition
 
-| Method | Endpoint                 | Description                                                |
-|--------|--------------------------|------------------------------------------------------------|
-| GET    | `/loom/hello`            | Runs a single virtual thread task                          |
-| GET    | `/loom/parallel`         | Runs 10 virtual thread tasks in parallel                   |
-| GET    | `/loom/stream`           | Pushes thread metrics every second via SSE                 |
-| GET    | `/loom/stress?count=100` | Spawns N virtual threads to stress the JVM                 |
-| GET    | `/loom/benchmark`        | Runs a benchmark: virtual threads vs platform threads      |
-| GET    | `/loom/pinning/good`     | Demonstrates pinning avoidance using ReentrantLock         |
-| GET    | `/loom/pinning/bad`      | Demonstrates carrier thread pinning caused by synchronized |
+| Method | Endpoint                  | Description                                                |
+|--------|---------------------------|------------------------------------------------------------|
+| GET    | `/loom/hello`             | Runs a single virtual thread task                          |
+| GET    | `/loom/info`              | Returns runtime information about the playground           |
+| GET    | `/loom/parallel?count=10` | Runs N virtual thread tasks in parallel                    |
+| GET    | `/loom/stream`            | Pushes thread metrics every second via SSE                 |
+| GET    | `/loom/stress?count=100`  | Spawns N virtual threads to stress the JVM                 |
+| GET    | `/loom/benchmark`         | Runs a benchmark: virtual threads vs platform threads      |
+| GET    | `/loom/pinning/good`      | Demonstrates pinning avoidance using ReentrantLock         |
+| GET    | `/loom/pinning/bad`       | Demonstrates carrier thread pinning caused by synchronized |
+
+### Actuator
+
+Spring Boot Actuator is available once the application is running:
+- http://localhost:8080/actuator/health
+- http://localhost:8080/actuator/info
 
 ### Swagger
 

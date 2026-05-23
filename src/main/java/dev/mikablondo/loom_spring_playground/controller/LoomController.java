@@ -38,6 +38,15 @@ public class LoomController {
     @Value("${loom.thread.create.tempo}")
     private long tempo;
 
+    @Value("${loom.thread.life.tempo}")
+    private long threadLifeTempo;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+
+    @Value("${spring.threads.virtual.enabled:false}")
+    private boolean virtualThreadsEnabled;
+
     private final LoomService loomService;
     private final ThreadMetricsService metricsService;
     private final BenchmarkService benchmarkService;
@@ -55,18 +64,32 @@ public class LoomController {
         return loomService.slowTask(1);
     }
 
+    @Operation(summary = "Returns runtime information about the Loom playground")
+    @GetMapping("/info")
+    public Map<String, Object> info() {
+        Runtime runtime = Runtime.getRuntime();
+
+        return Map.of(
+                "applicationName", applicationName,
+                "javaVersion", Runtime.version().toString(),
+                "virtualThreadsEnabled", virtualThreadsEnabled,
+                "availableProcessors", runtime.availableProcessors(),
+                "threadCreateTempoMs", tempo,
+                "threadLifeTempoMs", threadLifeTempo
+        );
+    }
+
     /**
-     * Endpoint qui lance 10 tâches en parallèle
-     * TODO : rendre paramétrable
+     * Endpoint qui lance N tâches en parallèle
      *
      * @return les messages des threads
      * @throws Exception en cas d'erreur
      */
-    @Operation(summary = "Runs 10 virtual thread tasks in parallel")
+    @Operation(summary = "Runs multiple virtual thread tasks in parallel")
     @GetMapping("/parallel")
-    public List<String> parallel() throws Exception {
+    public List<String> parallel(@RequestParam(defaultValue = "10") @Min(1) @Max(10_000) int count) throws Exception {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            var futures = IntStream.range(0, 10)
+            var futures = IntStream.rangeClosed(1, count)
                     .mapToObj(i -> executor.submit(() -> loomService.slowTask(i)))
                     .toList();
 
