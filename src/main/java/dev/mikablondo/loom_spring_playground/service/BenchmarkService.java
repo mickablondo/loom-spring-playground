@@ -1,54 +1,52 @@
 package dev.mikablondo.loom_spring_playground.service;
 
+import dev.mikablondo.loom_spring_playground.dto.BenchmarkResult;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 /**
- * Service permettant l'exécution du benchmark sur les deux types de threads
+ * Service permettant l'execution du benchmark sur les deux types de threads.
  *
  * @author mikablondo
  */
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class BenchmarkService {
-
-    private final ThreadMetricsService threadMetricsService;
 
     private static final int TASK_COUNT = 10000;
     private static final int SLEEP_MS = 1000;
 
+    private final ThreadMetricsService threadMetricsService;
+
     /**
-     * Exécute le benchmark : Virtual Threads vs Platform Threads
+     * Execute le benchmark : Virtual Threads vs Platform Threads.
      *
-     * @return toutes les données permettant de justifier qui a gagné !
+     * @return les donnees du benchmark
      */
-    public Map<String, Object> run() {
-        System.out.println("START virtual");
+    public BenchmarkResult run() {
+        log.info("Starting virtual threads benchmark");
         long virtualTime = calculVirtualThreadTime();
-        System.out.println("END virtual");
 
-        System.out.println("START platform");
+        log.info("Starting platform threads benchmark");
         long platformTime = calculPlatformThreadTime();
-        System.out.println("END platform");
 
-        return Map.of(
-                "Nombre de tâches en parallèle", TASK_COUNT,
-                "Temps d'attente pour accès bdd", SLEEP_MS,
-                "temps virtual threads", virtualTime,
-                "temps platform threads", platformTime,
-                "And the winner is ...", virtualTime < platformTime ? "Virtual Threads" : "Platform Threads",
-                "Plus rapide de", "%.2fx".formatted((double) platformTime / virtualTime)
+        return new BenchmarkResult(
+                TASK_COUNT,
+                SLEEP_MS,
+                virtualTime,
+                platformTime,
+                virtualTime < platformTime ? "Virtual Threads" : "Platform Threads",
+                "%.2fx".formatted((double) platformTime / virtualTime)
         );
     }
 
     /**
-     * Simulation d'une action de la part du thread.
-     * 1. prend 100 ms pour simuler un appel à une bdd
-     * 2. réalise un "gros" calcul
+     * Simulation d'une action bloquante suivie d'un petit calcul.
      */
     private void simulateAction() {
         try {
@@ -78,9 +76,9 @@ public class BenchmarkService {
     }
 
     /**
-     * Calcule le temps mis par les threads virtuels
+     * Calcule le temps mis par les threads virtuels.
      *
-     * @return temps d'exécution
+     * @return temps d'execution
      */
     private long calculVirtualThreadTime() {
         long startVirtual = System.currentTimeMillis();
@@ -96,9 +94,9 @@ public class BenchmarkService {
     }
 
     /**
-     * Calcule le temps mis par les threads de l'OS aka Platform Threads
+     * Calcule le temps mis par les platform threads.
      *
-     * @return temps d'exécution
+     * @return temps d'execution
      */
     private long calculPlatformThreadTime() {
         long startPlatform = System.currentTimeMillis();

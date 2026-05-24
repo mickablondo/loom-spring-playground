@@ -1,8 +1,8 @@
 package dev.mikablondo.loom_spring_playground.service;
 
+import dev.mikablondo.loom_spring_playground.config.LoomThreadProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,10 +15,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LoomService {
 
-    @Value("${loom.thread.life.tempo}")
-    private long tempo;
-
     private final ThreadMetricsService metricsService;
+    private final LoomThreadProperties threadProperties;
 
     /**
      * Simule une action plutôt lente
@@ -32,7 +30,7 @@ public class LoomService {
             if(log.isDebugEnabled()) {
                 log.debug("Thread {} isVirtual: {}", id, Thread.currentThread().isVirtual());
             }
-            Thread.sleep(tempo);
+            Thread.sleep(threadProperties.life().tempo());
             return "Tâche %d réalisée par %s".formatted(id, Thread.currentThread());
         } finally {
             metricsService.decrementVirtualTask();

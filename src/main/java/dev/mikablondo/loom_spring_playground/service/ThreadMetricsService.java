@@ -1,10 +1,10 @@
 package dev.mikablondo.loom_spring_playground.service;
 
+import dev.mikablondo.loom_spring_playground.dto.ThreadMetricsResponse;
 import org.springframework.stereotype.Service;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -36,17 +36,17 @@ public class ThreadMetricsService {
      *
      * @return une Map des différentes métriques avec leur valeur
      */
-    public Map<String, Object> getMetrics() {
+    public ThreadMetricsResponse getMetrics() {
         long virtualTasks = activeVirtualTasks.get();
         long platformTasks = activePlatformTasks.get();
         long jvmPlatformThreads = threadMXBean.getThreadCount();
 
-        return Map.of(
-                "activeVirtualTasks", virtualTasks,
-                "activePlatformTasks", platformTasks,
-                "jvmPlatformThreads", jvmPlatformThreads,
-                "peakJvmPlatformThreads", threadMXBean.getPeakThreadCount(), // Returns the peak live platform thread count since the Java virtual machine started or peak was reset. The count does not include virtual threads.
-                "timestamp", System.currentTimeMillis()
+        return new ThreadMetricsResponse(
+                virtualTasks,
+                platformTasks,
+                jvmPlatformThreads,
+                threadMXBean.getPeakThreadCount(), // Does not include virtual threads.
+                System.currentTimeMillis()
         );
     }
 }

@@ -67,14 +67,15 @@ that virtual threads make CPU-bound work faster.
 
 ## Pinning
 
-With `synchronized` carrier thread is pinned, virtual threads queue up:
+With `synchronized`, the carrier thread can be pinned while the virtual thread
+is sleeping inside the monitor:
 ```json
-{"strategy":"synchronized","taskCount":100,"timeMs":10898}
+{"strategy":"synchronized","taskCount":100,"timeMs":824}
 ```
 
-With `ReentrantLock` carrier thread is free, virtual threads run in parallel: 
+With `ReentrantLock`, the JVM can unmount the virtual thread while it is waiting:
 ```json
-{"strategy":"ReentrantLock","taskCount":100,"timeMs":120}
+{"strategy":"ReentrantLock","taskCount":100,"timeMs":117}
 ```
 
 > 💡 `synchronized` pins the carrier thread during I/O, blocking all other virtual threads.  

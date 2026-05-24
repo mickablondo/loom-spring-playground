@@ -1,5 +1,9 @@
 package dev.mikablondo.loom_spring_playground.controller;
 
+import dev.mikablondo.loom_spring_playground.config.LoomThreadProperties;
+import dev.mikablondo.loom_spring_playground.dto.BenchmarkResult;
+import dev.mikablondo.loom_spring_playground.dto.LoomInfoResponse;
+import dev.mikablondo.loom_spring_playground.dto.PinningResult;
 import dev.mikablondo.loom_spring_playground.service.BenchmarkService;
 import dev.mikablondo.loom_spring_playground.service.LoomService;
 import dev.mikablondo.loom_spring_playground.service.PinningService;
@@ -20,7 +24,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
@@ -35,12 +38,6 @@ import java.util.stream.IntStream;
 @Validated
 public class LoomController {
 
-    @Value("${loom.thread.create.tempo}")
-    private long tempo;
-
-    @Value("${loom.thread.life.tempo}")
-    private long threadLifeTempo;
-
     @Value("${spring.application.name}")
     private String applicationName;
 
@@ -51,6 +48,7 @@ public class LoomController {
     private final ThreadMetricsService metricsService;
     private final BenchmarkService benchmarkService;
     private final PinningService pinningService;
+    private final LoomThreadProperties threadProperties;
 
     /**
      * Endpoint simple
@@ -66,16 +64,16 @@ public class LoomController {
 
     @Operation(summary = "Returns runtime information about the Loom playground")
     @GetMapping("/info")
-    public Map<String, Object> info() {
+    public LoomInfoResponse info() {
         Runtime runtime = Runtime.getRuntime();
 
-        return Map.of(
-                "applicationName", applicationName,
-                "javaVersion", Runtime.version().toString(),
-                "virtualThreadsEnabled", virtualThreadsEnabled,
-                "availableProcessors", runtime.availableProcessors(),
-                "threadCreateTempoMs", tempo,
-                "threadLifeTempoMs", threadLifeTempo
+        return new LoomInfoResponse(
+                applicationName,
+                Runtime.version().toString(),
+                virtualThreadsEnabled,
+                runtime.availableProcessors(),
+                threadProperties.create().tempo(),
+                threadProperties.life().tempo()
         );
     }
 
@@ -137,7 +135,7 @@ public class LoomController {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             for (int i = 0; i < count; i++) {
                 int id = i;
-                Thread.sleep(tempo);
+                Thread.sleep(threadProperties.create().tempo());
                 executor.submit(() -> loomService.slowTask(id));
             }
         }
@@ -145,7 +143,7 @@ public class LoomController {
     }
 
     @GetMapping("/benchmark")
-    public Map<String, Object> benchmark() {
+    public BenchmarkResult benchmark() {
         return benchmarkService.run();
     }
 
@@ -160,13 +158,9 @@ public class LoomController {
      * @return les résultats du test de pinning avec synchronized
      */
     @GetMapping("/pinning/bad")
-    public Map<String, Object> pinningBad() {
+    public PinningResult pinningBad() {
         long time = pinningService.runWithSynchronized();
-        return Map.of(
-                "strategy", "synchronized",
-                "taskCount", 100,
-                "timeMs", time
-        );
+        return new PinningResult("synchronized", PinningService.TASK_COUNT, time);
     }
 
     /**
@@ -176,13 +170,9 @@ public class LoomController {
      * @return les résultats du test de pinning avec ReentrantLock
      */
     @GetMapping("/pinning/good")
-    public Map<String, Object> pinningGood() {
+    public PinningResult pinningGood() {
         long time = pinningService.runWithReentrantLock();
-        return Map.of(
-                "strategy", "ReentrantLock",
-                "taskCount", 100,
-                "timeMs", time
-        );
+        return new PinningResult("ReentrantLock", PinningService.TASK_COUNT, time);
     }
     //endregion
 }

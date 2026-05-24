@@ -15,10 +15,8 @@ import java.util.stream.IntStream;
 @Service
 public class PinningService {
 
-    private static final int TASK_COUNT = 100;
+    public static final int TASK_COUNT = 100;
     private static final int SLEEP_MS = 100;
-
-    private final Object lock = new Object();
 
     /**
      * Force le pinning avec un synchronized
@@ -31,7 +29,8 @@ public class PinningService {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var futures = IntStream.range(0, TASK_COUNT)
                     .mapToObj(i -> executor.submit(() -> {
-                        synchronized (lock) {
+                        Object localLock = new Object();
+                        synchronized (localLock) {
                             try {
                                 Thread.sleep(SLEEP_MS);
                             } catch (InterruptedException e) {
