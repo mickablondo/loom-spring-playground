@@ -5,11 +5,11 @@ Exploring Java virtual threads with Spring Boot and Project Loom.
 
 | Technology        | Version             |
 |-------------------|---------------------|
-| Java              | 21                  |
-| Maven             | 3.8.6               |
-| Spring Boot       | 4.0.6               |
-| Project Loom      | Built-in (Java 21+) |
-| springdoc-openapi | 2.8.8               |
+| Java              | 27                  |
+| Maven             | 3.9.14              |
+| Spring Boot       | 4.1.2               |
+| Project Loom      | Built-in (Java 27+) |
+| springdoc-openapi | 3.0.3               |
 | Chart.js          | Latest              |
 
 ## Metrics
