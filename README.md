@@ -81,20 +81,29 @@ With `ReentrantLock`, the JVM can unmount the virtual thread while it is waiting
 > 💡 `synchronized` pins the carrier thread during I/O, blocking all other virtual threads.  
 > Use `ReentrantLock` instead to let the JVM freely schedule virtual threads.
 
+### JDK 24 update
+
+The behavior described above applies to JDK 21–23.
+
+JEP 491, delivered in JDK 24, changed how virtual threads interact with monitors: when a virtual thread blocks inside a `synchronized` method or block, the JVM can now unmount it from its carrier thread, even while it holds the monitor.
+Therefore, the pinning behavior and benchmark difference shown above no longer demonstrate carrier-thread pinning on JDK 24 or later.
+No code change or JVM option is required; the application simply needs to run on JDK 24+.
+Pinning can still occur in other circumstances, such as certain blocking operations in native code.
+
 ## Endpoints
 
 ### Definition
 
-| Method | Endpoint                  | Description                                                |
-|--------|---------------------------|------------------------------------------------------------|
-| GET    | `/loom/hello`             | Runs a single virtual thread task                          |
-| GET    | `/loom/info`              | Returns runtime information about the playground           |
-| GET    | `/loom/parallel?count=10` | Runs N virtual thread tasks in parallel                    |
-| GET    | `/loom/stream`            | Pushes thread metrics every second via SSE                 |
-| GET    | `/loom/stress?count=100`  | Spawns N virtual threads to stress the JVM                 |
-| GET    | `/loom/benchmark`         | Runs a benchmark: virtual threads vs platform threads      |
-| GET    | `/loom/pinning/good`      | Demonstrates pinning avoidance using ReentrantLock         |
-| GET    | `/loom/pinning/bad`       | Demonstrates carrier thread pinning caused by synchronized |
+| Method | Endpoint                  | Description                                                                |
+|--------|---------------------------|----------------------------------------------------------------------------|
+| GET    | `/loom/hello`             | Runs a single virtual thread task                                          |
+| GET    | `/loom/info`              | Returns runtime information about the playground                           |
+| GET    | `/loom/parallel?count=10` | Runs N virtual thread tasks in parallel                                    |
+| GET    | `/loom/stream`            | Pushes thread metrics every second via SSE                                 |
+| GET    | `/loom/stress?count=100`  | Spawns N virtual threads to stress the JVM                                 |
+| GET    | `/loom/benchmark`         | Runs a benchmark: virtual threads vs platform threads                      |
+| GET    | `/loom/pinning/good`      | ReentrantLock comparison; `synchronized` pinning demo applies to JDK 21–23 |
+| GET    | `/loom/pinning/bad`       | `synchronized` pinning demo applies to JDK 21–23 (changed in JDK 24+)      |
 
 ### Actuator
 
